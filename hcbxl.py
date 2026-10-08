@@ -16,7 +16,10 @@ CFG={ # name: (rf, pv, buffer, election, adaptive)
  'C4 Hybrid LEACH':(1,1,0,'leach',0),
  'C5 Hybrid + CB (layered)':(1,1,1,'leach',0),
  'C6 Hybrid + CB + energy-aware election (DEEC-style)':(1,1,1,'deec',0),
- 'C7 HCB-XL (hybrid + CB + cross-layer)':(1,1,1,'xl',1)}
+ 'C7 HCB-XL (hybrid + CB + cross-layer)':(1,1,1,'xl',1),
+ # recent harvesting-aware baseline (Ren & Yao, Sensors 2020): clusters formed every 1/p rounds;
+ # within an epoch the scheduling node appoints the member with the highest residual energy as next CH
+ 'C8 EECHS (hybrid + CB)':(1,1,1,'eechs',0)}
 def run(args):
     name,seed,over=args; q=dict(P); q.update(over); rf,pv,cb,el,ad=CFG[name]
     rng=np.random.default_rng(seed); N=q['N']
@@ -28,6 +31,7 @@ def run(args):
     E=np.full(N,q['E0']); alive=np.ones(N,bool); G=np.zeros(N,bool); Eh_bar=np.zeros(N)
     Tr,F,B,H,L=q['Tr'],q['F'],q['B'],q['H'],q['L']; per=int(round(1/q['p']))
     hist=[]; tot_cons=0.0; tot_h_rf=0.0; tot_h_pv=0.0; delivered=0.0; lost=0.0; delay_num=0.0
+    lab=None; nclu=0
     pend=np.zeros(N)  # readings held across rounds (adaptive)
     Emte=(per-1)*F*(H+L)*q['Eelec']+per*F*L*q['EDA']+F*(H+L)*(q['Eelec']+q['efs']*50**2)
     for r in range(q['Rmax']):
@@ -58,10 +62,25 @@ def run(args):
         mw=wgt[elig].mean() if elig.any() else 1.0
         thr=np.clip(T*wgt/max(mw,1e-12),0,1)
         ch=elig&(rng.random(N)<thr); G|=ch
+        if el=='eechs':
+            if r%per==0 or lab is None:   # set-up: LEACH election, fixed membership for the epoch
+                ch0=np.where(ch)[0]; lab=np.full(N,-1)
+                if len(ch0):
+                    dd=np.linalg.norm(xy[:,None]-xy[None,ch0],axis=2); k=dd.argmin(1)
+                    lab=np.where(dd[np.arange(N),k]<dbs,k,-1); lab[ch0]=np.arange(len(ch0))
+                nclu=len(ch0)
+            ch=np.zeros(N,bool)
+            for k in range(nclu):   # scheduling node appoints max-residual-energy member
+                m_=np.where(alive&(lab==k))[0]
+                if len(m_): ch[m_[E[m_].argmax()]]=True
         cid=np.where(ch)[0]; mem=np.where(alive&~ch)[0]
         cons=np.where(alive,q['Eidle'],0.0)
         # ---- APP/NET: member transmissions (readings per round = F)
-        if len(cid):
+        if el=='eechs' and len(cid):
+            pos={lab[c]:i for i,c in enumerate(cid)}
+            j=np.array([pos.get(lab[m],-1) for m in mem],dtype=int)
+            dmin=np.where(j>=0,np.linalg.norm(xy[mem]-xy[cid[np.maximum(j,0)]],axis=1),np.inf)
+        elif len(cid):
             dm=np.linalg.norm(xy[mem,None]-xy[None,cid],axis=2); j=dm.argmin(1); dmin=dm[np.arange(len(mem)),j]
         else:
             j=np.full(len(mem),-1); dmin=np.full(len(mem),np.inf)

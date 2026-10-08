@@ -9,7 +9,7 @@ HCB-XL is a clustering protocol for wireless sensor networks whose nodes harvest
 ## Contents
 | File | Purpose |
 |---|---|
-| `hcbxl.py` | Network, harvesting, radio and buffer models; protocol; configurations C1–C7 (parameters in dict `P`, Table 4 of the paper) |
+| `hcbxl.py` | Network, harvesting, radio and buffer models; protocol; configurations C1–C7 and external baseline C8, EECHS (parameters in dict `P`, Table 4 of the paper) |
 | `chunk.py` | Runs all seven configurations for a range of seeds |
 | `analyze.py` | Builds Table 5, paired t-tests, and alive-node curves |
 | `sens2.py` | Sensitivity runs for Table 6 (`G4`, `G15`, `B5`, `B20`) |
@@ -18,6 +18,7 @@ HCB-XL is a clustering protocol for wireless sensor networks whose nodes harvest
 | `make_fig3.py` | Generates Fig. 3 (cross-layer architecture schematic) |
 | `make_fig4.py` | Generates Fig. 4 from `results/res_main.json` |
 | `results/res_main.json` | Raw results (30 seeds × 7 configurations) used in the paper |
+| `results/res_c8.json` | Raw results for C8 (EECHS re-implementation, 30 seeds), Section 5.7 |
 | `figures/` | Figures 1–6 of the paper (300 dpi PNG) |
 
 ## Requirements
@@ -30,6 +31,7 @@ python chunk.py 10 20
 python chunk.py 20 30
 python -c "import json,glob; R=sum([json.load(open(f)) for f in sorted(glob.glob('chunk_*.json'))],[]); json.dump(R,open('res_main.json','w'))"
 python analyze.py          # Table 5 and significance tests
+python -c "import hcbxl,json; json.dump([hcbxl.run(('C8 EECHS (hybrid + CB)',s,{})) for s in range(30)],open('res_c8.json','w'),default=float)"   # C8 row of Table 5
 python sens2.py G4; python sens2.py G15; python sens2.py B5; python sens2.py B20   # Table 6
 ```
 Seeds are fixed, so results are exactly reproducible.
