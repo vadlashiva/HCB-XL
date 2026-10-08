@@ -14,6 +14,7 @@ HCB-XL is a clustering protocol for wireless sensor networks whose nodes harvest
 | `analyze.py` | Builds Table 5, paired t-tests, and alive-node curves |
 | `sens2.py` | Sensitivity runs for Table 6 (`G4`, `G15`, `B5`, `B20`) |
 | `make_figs.py` | Generates Figs. 1, 4 and 5 |
+| `make_fig2.py` | Generates Fig. 2 (architecture schematic) |
 | `make_fig3.py` | Generates Fig. 3 from `results/res_main.json` |
 | `results/res_main.json` | Raw results (30 seeds × 7 configurations) used in the paper |
 | `figures/` | Figures 1–5 of the paper (300 dpi PNG) |
@@ -35,9 +36,9 @@ Seeds are fixed, so results are exactly reproducible.
 ## Reproducing the figures
 ```bash
 python make_figs.py        # Fig. 1 (harvest profile), Fig. 4 (ablation), Fig. 5 (sensitivity)
+python make_fig2.py        # Fig. 2 (architecture schematic)
 python make_fig3.py        # Fig. 3 (alive nodes), from results/res_main.json
 ```
-Fig. 2 (architecture) is a schematic.
 
 ## Citation
 See `CITATION.cff`.
