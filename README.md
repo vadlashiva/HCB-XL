@@ -13,11 +13,12 @@ HCB-XL is a clustering protocol for wireless sensor networks whose nodes harvest
 | `chunk.py` | Runs all seven configurations for a range of seeds |
 | `analyze.py` | Builds Table 5, paired t-tests, and alive-node curves |
 | `sens2.py` | Sensitivity runs for Table 6 (`G4`, `G15`, `B5`, `B20`) |
-| `make_figs.py` | Generates Figs. 1, 4 and 5 |
-| `make_fig2.py` | Generates Fig. 2 (architecture schematic) |
-| `make_fig3.py` | Generates Fig. 3 from `results/res_main.json` |
+| `make_figs.py` | Generates Figs. 1, 5 and 6 |
+| `make_fig2.py` | Generates Fig. 2 (system model: one HCB-XL clustering round taken from the simulation) |
+| `make_fig3.py` | Generates Fig. 3 (cross-layer architecture schematic) |
+| `make_fig4.py` | Generates Fig. 4 from `results/res_main.json` |
 | `results/res_main.json` | Raw results (30 seeds × 7 configurations) used in the paper |
-| `figures/` | Figures 1–5 of the paper (300 dpi PNG) |
+| `figures/` | Figures 1–6 of the paper (300 dpi PNG) |
 
 ## Requirements
 Python 3.9+, `pip install -r requirements.txt`
@@ -35,9 +36,10 @@ Seeds are fixed, so results are exactly reproducible.
 
 ## Reproducing the figures
 ```bash
-python make_figs.py        # Fig. 1 (harvest profile), Fig. 4 (ablation), Fig. 5 (sensitivity)
-python make_fig2.py        # Fig. 2 (architecture schematic)
-python make_fig3.py        # Fig. 3 (alive nodes), from results/res_main.json
+python make_figs.py        # Fig. 1 (harvest profile), Fig. 5 (ablation), Fig. 6 (sensitivity)
+python make_fig2.py        # Fig. 2 (system model, seed 0, round 2200)
+python make_fig3.py        # Fig. 3 (cross-layer architecture)
+python make_fig4.py        # Fig. 4 (alive nodes), from results/res_main.json
 ```
 
 ## Citation

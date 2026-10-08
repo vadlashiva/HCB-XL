@@ -1,4 +1,4 @@
-"""Figs. 1, 4 and 5: harvest profile (model equations, Table 4 parameters),
+"""Figs. 1, 5 and 6: harvest profile (model equations, Table 4 parameters),
 ablation bars (Table 5) and irradiance sensitivity (Table 6).
 Run from the repository root: python make_figs.py"""
 import numpy as np, matplotlib
@@ -58,7 +58,7 @@ for ax,val,ci,yl,tag,fmt in [(axs[0],hnd_h,hci_h,"Half-network lifetime (h)","(a
 from matplotlib.patches import Patch
 h=[Patch(facecolor=c_,edgecolor="k",lw=0.5,hatch=("///" if n.startswith("HCB") else None),label=n) for n,c_ in groups]
 fig.legend(handles=h,loc="upper center",ncol=3,fontsize=8,frameon=False,bbox_to_anchor=(0.5,1.12))
-fig.tight_layout(); fig.savefig("figures/Fig4_ablation.png"); plt.close(fig)
+fig.tight_layout(); fig.savefig("figures/Fig5_ablation.png"); plt.close(fig)
 
 # ---------------- Sensitivity (Table 5) ----------------
 Gx=[4,8,15]
@@ -84,4 +84,4 @@ for ax,tag in zip(axs,["(a)","(b)"]):
 axs[1].legend(fontsize=8,loc="upper left")
 axs[0].annotate("open markers:\nlower bounds\n(20-day horizon)",xy=(15,26200/60),xytext=(4.3,180),fontsize=7.5,
                 arrowprops=dict(arrowstyle="->",lw=0.6))
-fig.tight_layout(); fig.savefig("figures/Fig5_sensitivity.png"); plt.close(fig)
+fig.tight_layout(); fig.savefig("figures/Fig6_sensitivity.png"); plt.close(fig)

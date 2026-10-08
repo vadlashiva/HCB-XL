@@ -1,29 +1,45 @@
-"""Fig. 3: alive nodes versus time, from the raw results in results/res_main.json.
+"""Fig. 3: HCB-XL cross-layer architecture (schematic).
 Run from the repository root: python make_fig3.py"""
-import json, numpy as np, matplotlib
-matplotlib.use("Agg"); import matplotlib.pyplot as plt
-plt.rcParams.update({"font.family":"serif","font.size":10,"savefig.dpi":300,"savefig.bbox":"tight"})
-R=json.load(open("results/res_main.json"))
-names=list(dict.fromkeys(r["name"] for r in R))
-cur={n:np.mean([np.pad(r["alive"],(0,480-len(r["alive"]))) for r in R if r["name"]==n],0) for n in names}
-t=np.arange(480)/24  # hourly samples -> days
-lab={"C1":"C1 Battery only","C2":"C2 RF only","C3":"C3 Solar only","C4":"C4 Hybrid",
-     "C5":"C5 Hybrid + circular buffer","C6":"C6 Hybrid + buffer + energy-aware election","C7":"C7 HCB-XL (proposed)"}
-sty={"C1":("#000000",":","x"),"C2":("#56B4E9","--","s"),"C3":("#E69F00","-.","^"),"C4":("#009E73","-","v"),
-     "C5":("#0072B2","--","o"),"C6":("#CC79A7",(0,(3,1,1,1)),"P"),"C7":("#D55E00","-","D")}
-fig,axs=plt.subplots(1,2,figsize=(7.4,3.3),gridspec_kw={"width_ratios":[1.15,1]})
-for ax,xmax,ymax,me in [(axs[0],6,105,6),(axs[1],20,25,24)]:
-    for k in range(int(xmax)+1): ax.axvspan(k+0.5,k+1,color="0.9",lw=0,zorder=0)
-    for n in names:
-        k=n[:2]; c,ls,m=sty[k]
-        ax.plot(t,cur[n],color=c,ls=ls,lw=1.8 if k=="C7" else 1.3,marker=m,ms=4,markevery=(3,me),
-                label=lab[k],zorder=3 if k=="C7" else 2)
-    ax.set_xlim(0,xmax); ax.set_ylim(0 if ymax<50 else -2,ymax); ax.grid(axis="y",color="0.88",lw=0.6)
-    ax.set_xlabel("Time (days)")
-axs[0].set_ylabel("Alive nodes"); axs[1].set_xticks(range(0,21,4)); axs[1].set_ylabel("Alive nodes (zoom, 0\u201325)")
-axs[0].text(0.5,-0.27,"(a)",transform=axs[0].transAxes,ha="center")
-axs[1].text(0.5,-0.27,"(b)",transform=axs[1].transAxes,ha="center")
-h,l=axs[0].get_legend_handles_labels()
-fig.legend(h,l,loc="lower center",bbox_to_anchor=(0.5,1.0),ncol=2,fontsize=8,frameon=False)
-fig.tight_layout(); fig.savefig("figures/Fig3_alive_nodes.png")
-for n in names: print(n[:2], "alive after 3rd night (day 3): %.1f"%cur[n][72], " end: %.1f"%cur[n][-1])
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
+plt.rcParams.update({"font.family": "serif", "mathtext.fontset": "dejavuserif",
+                     "savefig.dpi": 300, "savefig.bbox": "tight", "savefig.pad_inches": 0.03})
+VERM = "#D55E00"
+
+layers = [
+    ("Application layer", "Sensing, member circular buffer,\nenergy-adaptive flush (Eq. 8)"),
+    ("Transport layer", "Flush-level reliability (ACK / retry)"),
+    ("Network layer", "CH-side buffer, fusion, single-hop to BS"),
+    ("Data-link layer", "Harvest- & buffer-aware CH election (Eq. 11), TDMA"),
+    ("Physical layer", "RF (Eqs. 1–2) + solar (Eqs. 3–4) harvesting,\nenergy store (Eq. 6), radio"),
+]
+rows = [(r"$E_i$", "residual energy"),
+        (r"$\bar{E}_{h,i}$", "harvest rate"),
+        (r"$b_i/B_i$", "buffer occupancy"),
+        (r"$d_{i,\mathrm{CH}},\ d_{i,\mathrm{BS}}$", "distances")]
+
+fig, ax = plt.subplots(figsize=(7.2, 4.4))
+ax.set_xlim(0, 100); ax.set_ylim(0, 60); ax.axis("off")
+x0, w, h, gap, top = 1, 55, 10.0, 1.2, 59.5
+tx, tw, ty, th = 65, 34, 12, 36
+tcx, tcy = tx, ty + th / 2
+for k, (title, body) in enumerate(layers):
+    y = top - (k + 1) * h - k * gap
+    ax.add_patch(FancyBboxPatch((x0, y), w, h, boxstyle="round,pad=0,rounding_size=0.8",
+                                fc="#EEF2F7", ec="#2B3A4A", lw=1.0))
+    ax.text(x0 + 1.8, y + h - 1.4, title, weight="bold", fontsize=9.5, va="top")
+    ax.text(x0 + 1.8, y + h - 4.3, body, fontsize=7.8, va="top", linespacing=1.2)
+    ax.add_patch(FancyArrowPatch((x0 + w + 0.6, y + h / 2), (tcx - 0.4, tcy), arrowstyle="<|-|>",
+                                 mutation_scale=9, lw=1.0, color="#4A4A4A", shrinkA=0, shrinkB=0))
+ax.add_patch(FancyBboxPatch((tx, ty), tw, th, boxstyle="round,pad=0,rounding_size=1.0",
+                            fc="#FFF4E8", ec=VERM, lw=1.6))
+ax.text(tx + tw / 2, ty + th - 2.5, "Cross-layer\ninformation table", ha="center", va="top",
+        weight="bold", fontsize=9.5, linespacing=1.2)
+ax.plot([tx + 2.5, tx + tw - 2.5], [ty + th - 10, ty + th - 10], color=VERM, lw=0.7)
+for k, (sym, desc) in enumerate(rows):
+    yy = ty + th - 14.0 - k * 5.0
+    ax.text(tx + 2.0, yy, sym, fontsize=9, va="center")
+    ax.text(tx + 15.5, yy, desc, fontsize=7.8, va="center")
+fig.savefig("figures/Fig3_architecture.png"); plt.close(fig)
